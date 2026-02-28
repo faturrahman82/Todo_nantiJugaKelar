@@ -7,9 +7,11 @@ import '../molecules/filter_dropdown.dart';
 import '../organisms/add_task_form.dart';
 import '../organisms/task_list_item.dart';
 import '../organisms/todo_header.dart';
+import '../organisms/dialogs/confirm_delete_dialog.dart';
+import '../organisms/dialogs/pick_date_type_dialog.dart';
+import '../organisms/dialogs/add_task_dialog.dart';
 import '../../services/notification_service.dart';
 import '../../services/widget_service.dart';
-import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -229,200 +231,46 @@ class _HomePageState extends State<HomePage> {
     _saveTasks();
   }
 
+  void _confirmDeleteTask(String id, String title) {
+    showDialog(
+      context: context,
+      builder: (ctx) => ConfirmDeleteDialog(
+        title: 'Hapus Tugas?',
+        message: 'Apakah Anda yakin ingin menghapus tugas "$title"?',
+        icon: Icons.delete_outline_rounded,
+        onConfirm: () => _deleteTask(id),
+      ),
+    );
+  }
+
   void _deleteAll() {
     if (_tasks.isEmpty) return;
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.warning_rounded,
-                  color: Colors.red,
-                  size: 32,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Konfirmasi Hapus',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Apakah Anda yakin ingin menghapus semua tugas dalam daftar ini? Tindakan ini tidak dapat dibatalkan.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withOpacity(0.7),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: Text(
-                      'Batal',
-                      style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      setState(() {
-                        _tasks.clear();
-                      });
-                      _saveTasks();
-                      Navigator.pop(ctx);
-                    },
-                    icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                    label: const Text(
-                      'Hapus Semua',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      builder: (ctx) => ConfirmDeleteDialog(
+        title: 'Konfirmasi Hapus',
+        message:
+            'Apakah Anda yakin ingin menghapus semua tugas dalam daftar ini? Tindakan ini tidak dapat dibatalkan.',
+        confirmLabel: 'Hapus Semua',
+        onConfirm: () {
+          setState(() {
+            _tasks.clear();
+          });
+          _saveTasks();
+        },
       ),
     );
   }
 
   Future<bool> _pickDate() async {
-    // Tampilkan opsi mau jenis tanggal yang mana
     final int? choice = await showDialog<int>(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Theme.of(context).dividerColor.withOpacity(0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.date_range_rounded,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Pilih Tipe Waktu',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildTypeOption(
-                context: context,
-                icon: Icons.notes_rounded,
-                title: 'Catatan Biasa',
-                subtitle: 'Tanpa alarm. Hanya pengingat visual.',
-                onTap: () => Navigator.pop(ctx, 1),
-              ),
-              const SizedBox(height: 8),
-              _buildTypeOption(
-                context: context,
-                icon: Icons.event_rounded,
-                title: 'Acara Masa Depan',
-                subtitle: '1 Tanggal. Ada alarm pengingat H-7.',
-                onTap: () => Navigator.pop(ctx, 2),
-              ),
-              const SizedBox(height: 8),
-              _buildTypeOption(
-                context: context,
-                icon: Icons.alarm_rounded,
-                title: 'Kejar Target (Deadline)',
-                subtitle: 'Pilih rentang. Peringatan berkali-kali!',
-                onTap: () => Navigator.pop(ctx, 3),
-              ),
-            ],
-          ),
-        ),
-      ),
+      builder: (ctx) => const PickDateTypeDialog(),
     );
 
     if (choice == null) return false;
 
     if (choice == 1) {
-      // Single Date (Catatan Biasa)
       final date = await showDatePicker(
         context: context,
         initialDate: _singleDate ?? DateTime.now(),
@@ -443,7 +291,6 @@ class _HomePageState extends State<HomePage> {
       }
       return false;
     } else if (choice == 2) {
-      // Single Date (Acara Masa Depan)
       final date = await showDatePicker(
         context: context,
         initialDate: _singleDate ?? DateTime.now(),
@@ -464,7 +311,6 @@ class _HomePageState extends State<HomePage> {
       }
       return false;
     } else if (choice == 3) {
-      // Date Range (Deadline Berdarah)
       final dateRange = await showDateRangePicker(
         context: context,
         firstDate: DateTime(
@@ -493,62 +339,6 @@ class _HomePageState extends State<HomePage> {
     return false;
   }
 
-  Widget _buildTypeOption({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.5),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 28),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withOpacity(0.6),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> _startAddFlow() async {
     final title = _taskNameCtrl.text.trim();
     if (title.isEmpty) return;
@@ -558,257 +348,19 @@ class _HomePageState extends State<HomePage> {
 
     if (!mounted) return;
 
-    final List<String> categories = [
-      '🔴 Urgent',
-      '🔵 Kuliah',
-      '🟢 Pribadi',
-      '⚪ Lain-lain',
-    ];
-
     await showDialog(
       context: context,
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              elevation: 0,
-              backgroundColor: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor.withOpacity(0.3),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.edit_note_rounded,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Detail Tambahan',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(
-                              context,
-                            ).dividerColor.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '📝 ${_taskNameCtrl.text}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                            if (_selectedDateRange != null) ...[
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.date_range,
-                                    size: 14,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '${DateFormat('dd MMM yyyy').format(_selectedDateRange!.start)} - ${DateFormat('dd MMM yyyy').format(_selectedDateRange!.end)}',
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ] else if (_singleDate != null) ...[
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.event,
-                                    size: 14,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    DateFormat(
-                                      'dd MMM yyyy',
-                                    ).format(_singleDate!),
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Kategori:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: categories.map((cat) {
-                          final isSelected = _selectedCategory == cat;
-                          return ChoiceChip(
-                            label: Text(cat),
-                            selected: isSelected,
-                            onSelected: (selected) {
-                              setDialogState(() {
-                                _selectedCategory = selected ? cat : null;
-                              });
-                            },
-                            selectedColor: Theme.of(
-                              context,
-                            ).colorScheme.primary.withOpacity(0.2),
-                            labelStyle: TextStyle(
-                              fontSize: 14,
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurface,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Catatan Ekstra / Sub-Task:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      CustomTextField(
-                        controller: _descriptionCtrl,
-                        hintText: 'Tulis detail tambahan (opsional)...',
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                            ),
-                            child: Text(
-                              'Batal',
-                              style: TextStyle(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.pop(ctx);
-                              _addTask();
-                            },
-                            icon: const Icon(
-                              Icons.check_circle_outline,
-                              size: 18,
-                            ),
-                            label: const Text(
-                              'Simpan',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
-                              foregroundColor: Theme.of(
-                                context,
-                              ).colorScheme.onPrimary,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
+        return AddTaskDialog(
+          taskName: title,
+          selectedDateRange: _selectedDateRange,
+          singleDate: _singleDate,
+          initialCategory: _selectedCategory,
+          descriptionCtrl: _descriptionCtrl,
+          onCategoryChanged: (category) {
+            _selectedCategory = category;
           },
+          onSave: () => _addTask(),
         );
       },
     );
@@ -999,7 +551,7 @@ class _HomePageState extends State<HomePage> {
             (t) => TaskListItem(
               task: t,
               onToggle: (_) => _toggleTask(t.id),
-              onDelete: () => _deleteTask(t.id),
+              onDelete: () => _confirmDeleteTask(t.id, t.title),
             ),
           )
           .toList(),

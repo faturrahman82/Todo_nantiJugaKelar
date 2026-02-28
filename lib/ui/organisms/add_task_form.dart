@@ -17,6 +17,14 @@ class AddTaskForm extends StatefulWidget {
 }
 
 class _AddTaskFormState extends State<AddTaskForm> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -25,6 +33,7 @@ class _AddTaskFormState extends State<AddTaskForm> {
         Expanded(
           child: CustomTextField(
             controller: widget.controller,
+            focusNode: _focusNode,
             hintText: 'Apa yang perlu dilakukan?',
           ),
         ),
@@ -38,6 +47,7 @@ class _AddTaskFormState extends State<AddTaskForm> {
               icon: const Icon(Icons.send_rounded, color: Colors.white),
               onPressed: () {
                 if (widget.controller.text.trim().isNotEmpty) {
+                  _focusNode.unfocus();
                   widget.onAddDialog();
                 }
               },

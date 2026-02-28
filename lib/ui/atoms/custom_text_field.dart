@@ -6,6 +6,8 @@ class CustomTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final Widget? suffixIcon;
   final int? maxLines;
+  final FocusNode? focusNode;
+  final bool autofocus;
 
   const CustomTextField({
     super.key,
@@ -14,12 +16,16 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.suffixIcon,
     this.maxLines = 1,
+    this.focusNode,
+    this.autofocus = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      focusNode: focusNode,
+      autofocus: autofocus,
       onChanged: onChanged,
       maxLines: maxLines,
       style: const TextStyle(height: 1.5),
